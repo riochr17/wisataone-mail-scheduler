@@ -1,0 +1,543 @@
+<div>    
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Maven+Pro');
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        td {
+            padding: 0;
+        }
+        body {
+            font-weight: 400;
+            line-height: 1.6;
+            font-size:  0.9rem;
+            margin: 0;
+            
+            background-color: #FFF;
+        }
+        .wisataone-mail {
+            background: url('{{ img_bg }}') no-repeat center top / contain;
+            font-family: 'Maven Pro';
+            color: #000;
+            /** * * Customization */
+        }
+        .wisataone-mail--wrapper {
+            margin-left: 0%;
+            width: 100%;
+        }
+        @media (min-width: 576px) {
+            .wisataone-mail--wrapper {
+                margin-left: 0%;
+                width: 100%;
+            }
+        }
+        @media (min-width: 768px) {
+            .wisataone-mail--wrapper {
+                margin-left: 10%;
+                width: 80%;
+            }
+        }
+        @media (min-width: 992px) {
+            .wisataone-mail--wrapper {
+                margin-left: 15%;
+                width: 70%;
+            }
+        }
+        @media (min-width: 1200px) {
+            .wisataone-mail--wrapper {
+                margin-left: 20%;
+                width: 60%;
+            }
+        }
+        .wisataone-mail--container {
+            padding: 12px;
+        }
+        @media (min-width: 576px) {
+            .wisataone-mail--container {
+                padding: 16px;
+            }
+        }
+        @media (min-width: 768px) {
+            .wisataone-mail--container {
+                padding: 20px;
+            }
+        }
+        @media (min-width: 992px) {
+            .wisataone-mail--container {
+                padding: 24px;
+            }
+        }
+        @media (min-width: 1200px) {
+            .wisataone-mail--container {
+                padding: 24px;
+            }
+        }
+        .wisataone-mail--logo {
+            padding: 12px 0;
+        }
+        .wisataone-mail--logo > img {
+            height: 56px;
+        }
+        .wisataone-mail--flash-description {
+            padding: 4px;
+            margin: 4px 0;
+            font-size: 1.35em;
+            opacity: 0.9;
+            position: relative;
+            border: solid 1px #fff;
+        }
+        @media (min-width: 576px) {
+            .wisataone-mail--flash-description {
+                padding: 5px;
+                margin: 5px 0;
+            }
+        }
+        @media (min-width: 768px) {
+            .wisataone-mail--flash-description {
+                padding: 6px;
+                margin: 6px 0;
+            }
+        }
+        @media (min-width: 992px) {
+            .wisataone-mail--flash-description {
+                padding: 8px;
+                margin: 8px 0;
+            }
+        }
+        @media (min-width: 1200px) {
+            .wisataone-mail--flash-description {
+                padding: 10px;
+                margin: 10px 0;
+            }
+        }
+        .wisataone-mail--flash-description--container {
+            background-color: #ebebeb;
+            padding: 10%;
+        }
+        .wisataone-mail--flash-description--big-title {
+            font-weight: 900;
+        }
+        .wisataone-mail--detail {
+            position: relative;
+            background: #f5f5f5;
+            padding: 10%;
+            margin-top: 24px;
+        }
+        @media (min-width: 576px) {
+            .wisataone-mail--detail {
+                margin-top: 24px;
+            }
+        }
+        @media (min-width: 768px) {
+            .wisataone-mail--detail {
+                margin-top: 24px;
+            }
+        }
+        @media (min-width: 992px) {
+            .wisataone-mail--detail {
+                margin-top: 36px;
+            }
+        }
+        @media (min-width: 1200px) {
+            .wisataone-mail--detail {
+                margin-top: 48px;
+            }
+        }
+        .wisataone-mail--detail--title {
+            font-size: 1.35em;
+            margin-top: -1em;
+        }
+        .wisataone-mail--detail--small-detail {
+            margin-top: 6px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 0.9em;
+            color: #606060;
+        }
+        .wisataone-mail--detail--step-payment {
+            margin-top: 6px;
+            height: 40px;
+            position: relative;
+        }
+        .wisataone-mail--detail--step-payment > table {
+            width: 100%;
+        }
+        .wisataone-mail--detail--step-payment > table > tr {
+            width: 100%;
+        }
+        .wisataone-mail--detail--step-payment--o-parent {
+            height: 40px;
+            width: 40px;
+            border: solid 1px #aaa;
+            border-radius: 999px;
+            background: #fff;
+        }
+        .wisataone-mail--detail--step-payment--o {
+            height: 40px;
+            width: 40px;
+            display: table;
+            font-size: 0.7em;
+            line-height: 1.1;
+            text-align: center;
+        }
+        .wisataone-mail--detail--step-payment--o > span {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .wisataone-mail--detail--step-payment--o-line {
+            width: 100%;
+            height: 1px;
+            background: #aaa;
+        }
+        .wisataone-mail--detail--step-payment--o-line-1 {
+            left: 0;
+        }
+        .wisataone-mail--detail--step-payment--o-line-2 {
+            right: 0;
+        }
+        .wisataone-mail--detail--large-detail {
+            margin-top: 13px;
+        }
+        .wisataone-mail--detail--large-detail--button {
+            font-family: Arial, Helvetica, sans-serif;
+            cursor: pointer;
+            margin-top: 18px;
+            padding: 12px 18px;
+            background-color: #ff5900;
+            color: #fff;
+            display: inline-block;
+            border-radius: 3px;
+            transition: 200ms;
+        }
+        .wisataone-mail--detail--large-detail--button:hover {
+            background-color: #e20;
+        }
+        .wisataone-mail--detail-a {
+            background: #fff;
+            /* border: solid 1px #777; */
+        }
+        .wisataone-mail--footer {
+            margin: 18px 0;
+            padding: 8px 16px;
+            border-left: solid 1px #d0d0d0;
+        }
+        .wisataone-mail--footer--company-name {
+            font-size: 1.35em;
+        }
+        .wisataone-mail--footer--two-line-description {
+            font-size: 0.9em;
+            margin-top: 4px;
+            color: #7e7e7e;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .wisataone-mail--footer--website {
+            font-size: 0.9em;
+            color: #ff5900;
+        }
+        .wisataone-mail--footer--website > a {
+            color: inherit;
+        }
+        .wisataone-mail--table {
+            border: solid 1px #d0d0d0;
+            border-radius: 3px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .wisataone-mail--table--row {
+            padding: 12px 16px;
+            background-color: #fff;
+        }
+        .wisataone-mail--table--row > div {
+            display: inline-block;
+        }
+        .wisataone-mail--table--row--key {
+            color: #7e7e7e;
+        }
+        .wisataone-mail--table--row--value {
+            float: right;
+        }
+        .wisataone-mail--table--row-even {
+            background-color: #f0f0f0;
+        }
+        .wisataone-mail--table--row-first-child {
+            border-top-right-radius: 3px;
+            border-top-left-radius: 3px;
+        }
+        .wisataone-mail--table--row-last-child {
+            border-bottom-right-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+        .wisataone-mail--dp-10-payment .wisataone-mail--flash-description--big-title {
+            color: #ff5900;
+        }
+        .wisataone-mail--dp-10-payment .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #ff5900;
+        }
+        .wisataone-mail--dp-10-payment .wisataone-mail--detail-a--colored {
+            color: #ff5900;
+        }
+        .wisataone-mail--dp-10-payment .wisataone-mail--detail--large-detail--button {
+            display: inline-block;
+        }
+        .wisataone-mail--dp-10-payment .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #ff5900;
+            border-color: #ff5900;
+        }
+        .wisataone-mail--dp-10-success .wisataone-mail--flash-description--big-title {
+            color: #5cb719;
+        }
+        .wisataone-mail--dp-10-success .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #5cb719;
+        }
+        .wisataone-mail--dp-10-success .wisataone-mail--detail-a--colored {
+            color: #5cb719;
+        }
+        .wisataone-mail--dp-10-success .wisataone-mail--detail--large-detail--button {
+            display: none;
+        }
+        .wisataone-mail--dp-10-success .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--flash-description--big-title {
+            color: #ff5900;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #ff5900;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail-a--colored {
+            color: #ff5900;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail--large-detail--button {
+            display: inline-block;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail--step-payment--o-line-1 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-50-payment .wisataone-mail--detail--step-payment--o-parent-50 {
+            color: #ff5900;
+            border-color: #ff5900;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--flash-description--big-title {
+            color: #5cb719;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #5cb719;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail-a--colored {
+            color: #5cb719;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail--large-detail--button {
+            display: none;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail--step-payment--o-line-1 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-50-success .wisataone-mail--detail--step-payment--o-parent-50 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--flash-description--big-title {
+            color: #ff5900;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #ff5900;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail-a--colored {
+            color: #ff5900;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--large-detail--button {
+            display: inline-block;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--step-payment--o-line-1 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--step-payment--o-parent-50 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--step-payment--o-line-2 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-40-payment .wisataone-mail--detail--step-payment--o-parent-40 {
+            color: #ff5900;
+            border-color: #ff5900;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--flash-description--big-title {
+            color: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail-a--colored {
+            color: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--large-detail--button {
+            display: none;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--step-payment--o-parent-10 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--step-payment--o-line-1 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--step-payment--o-parent-50 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--step-payment--o-line-2 {
+            background: #5cb719;
+        }
+        .wisataone-mail--p-40-success .wisataone-mail--detail--step-payment--o-parent-40 {
+            color: #5cb719;
+            border-color: #5cb719;
+        }
+    
+        .wistaone-payment-page {
+            margin: 150px 0;
+        }
+    </style>
+    <div class="wistaone-payment-page">
+        <div class="wisataone-mail--detail wisataone-mail--detail-a">
+            <div class="wisataone-mail--detail--title wisataone-mail--detail-a--colored">
+                {{jenis_transaksi}}
+            </div>
+            <div class="wisataone-mail--detail--small-detail">
+                <div class="wisataone-mail--detail--small-detail--nomor-pemesanan">
+                    Nomor Transaksi #{{ id_transaksi }}
+                </div>
+                <div class="wisataone-mail--detail--small-detail--nomor">
+                    {{ current_date }} WIB
+                </div>
+            </div>
+            <div class="wisataone-mail--detail--large-detail">
+                <div class="wisataone-mail--table">
+                    <div class="wisataone-mail--table--row wisataone-mail--table--row-even wisataone-mail--table--row-first-child">
+                        <div class="wisataone-mail--table--row--key">
+                            Trip
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ tour_name }}
+                        </div>
+                    </div>
+                    <div class="wisataone-mail--table--row">
+                        <div class="wisataone-mail--table--row--key">
+                            Nama
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ traveler_name }}
+                        </div>
+                    </div>
+                    <div class="wisataone-mail--table--row  wisataone-mail--table--row-even">
+                        <div class="wisataone-mail--table--row--key">
+                            Tanggal trip
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ trip_date }}
+                        </div>
+                    </div>
+                    <div class="wisataone-mail--table--row">
+                        <div class="wisataone-mail--table--row--key">
+                            Peserta
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ number_of_traveler }} Orang
+                        </div>
+                    </div>
+                    <div class="wisataone-mail--table--row  wisataone-mail--table--row-even">
+                        <div class="wisataone-mail--table--row--key">
+                            Jenis
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ jenis_transaksi }}
+                        </div>
+                    </div>
+                    <div class="wisataone-mail--table--row wisataone-mail--table--row-last-child">
+                        <div class="wisataone-mail--table--row--key">
+                            Jumlah bayar saat ini
+                        </div>
+                        <div class="wisataone-mail--table--row--value wisataone-mail--detail-a--colored">
+                            {{ jumlah_bayar }}
+                        </div>
+                    </div>
+                </div>
+                <div class="wisataone-mail--detail--large-detail--button" id="wisataone_X1_start_payment">
+                    Selesaikan Pembayaran
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript"
+        src="{{ snap_midtrans_url }}"
+        data-client-key="{{ client_key_midtrans }}">
+    </script> 
+
+    <script type="text/javascript">
+        const pbutton = document.getElementById("wisataone_X1_start_payment");
+        const getSnapToken = (cb) => {
+            var http = new XMLHttpRequest();
+            var url = "{{base_url}}/index.php/wp-json/step-payment/v1/get_snap_token";
+            var params = "id={{ id_transaksi }}";
+            http.open('POST', url, true);
+            
+            //Send the proper header information along with the request
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+            http.onreadystatechange = function() {//Call a function when the state changes.
+                if(http.readyState == 4) {
+                    pbutton.innerText = "Selesaikan Pembayaran";
+                    if (http.status == 200) {
+                        const token = http.responseText.replace(/^"(.*)"$/, '$1')
+                        cb(token);
+                    } else {
+                        cb(false);
+                    }
+                }
+            }
+            http.send(params);
+        }
+        function startPayment() {
+            pbutton.innerText = "Loading...";
+            cb = snap_token => {
+                if (!snap_token) {
+                    alert("Pembayaran sedang tidak dapat digunakan, silahkan hubungi administrator.");
+                    return;
+                }
+                snap.pay(snap_token, {
+                    onSuccess: function(result) {
+                        window.location.replace("/?midtrans");
+                    },
+                    onPending: function(result) {
+                        window.location.replace("/?midtrans");
+                    },
+                    onError: function(result) {
+                        window.location.replace("/?midtrans");
+                    },
+                    onClose: function() {
+                        //
+                    }
+                });
+            };
+            getSnapToken(cb);
+        }
+        pbutton.addEventListener("click", startPayment);
+    </script>
+</div>
