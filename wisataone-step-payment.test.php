@@ -8,13 +8,14 @@ class WSTX1SchedulerTest {
 
     private $buffer_output = '';
     private $step_test = 0;
+    private $email = 'riochr17@gmail.com';
 
     function __construct() {
         $this->appendOutput("Start testing ...");
     }
 
     private function appendOutput($a, $color = 'green') {
-        $this->buffer_output .= (++$this->step_test) . ": " . $a . "\n";
+        $this->buffer_output .= (++$this->step_test) . ". [" . (new DateTime())->format('Y-m-d H:i:s') . "]: " . $a . "\n";
     }
 
     private function wisataone_X1_test_insert_new_schedule_to_database() {
@@ -23,7 +24,7 @@ class WSTX1SchedulerTest {
             'id_tour' => 5, 
             'id_order' => $id_order, 
             'traveler_name' => 'Testing', 
-            'traveler_email' => 'riochr17@gmail.com', 
+            'traveler_email' => $this->email, 
             'tour_name' => 'Test Tour', 
             'destination' => '.', 
             'price' => 88888, 
@@ -37,7 +38,7 @@ class WSTX1SchedulerTest {
 
     private function wisataone_X1_test_finalize($status, $id = null) {
         if ($id) {
-            wisataone_X1_delete_single_order($id);
+            //wisataone_X1_delete_single_order($id);
         }
         if (!$status) {
             $this->appendOutput("Testing stopped.", 'red');
@@ -85,6 +86,34 @@ class WSTX1SchedulerTest {
         $schedulerInstance->debug_update($key, $ts_str);
     }
 
+    private function setBookingDateTo45DaysPlus5Secs($schedulerInstance) {
+        $date1 = DateTime::createFromFormat('Y-m-d H:i:s', $schedulerInstance->trip_date);
+        $dateAddedTs = new DateTime();
+        $dateAddedTs->setTimestamp($dateAddedTs->getTimestamp() + 60 * 60 * 24 * 45 + 5);
+        $begin_ts_str = $date1->format('Y-m-d');
+        $ts_str = $dateAddedTs->format('Y-m-d');
+        $this->appendOutput("Booking date adjusted from {$begin_ts_str} to {$ts_str}.");
+        $schedulerInstance->debug_update('trip_date', $dateAddedTs->format('Y-m-d H:i:s'));
+    }
+
+    private function test_payment_notification($id, $status) {
+        $this->appendOutput("Payment notification incoming, status = {$status} with order id = {$id}");
+        $data = [
+            "transaction_time" => "2019-09-22 14:12:16",
+            "transaction_status" => $status,
+            "transaction_id" => "43f865f4-6483-4a50-9562-9574e7d87500",
+            "status_message" => "midtrans payment notification",
+            "status_code" => "200",
+            "signature_key" => "895d5608bade91306a8fd4d5f8de440a511452a2a7b1a7187440cddc4659d477711f1843ed6b3bbe7aede6637357a3f4acae0f6fa4b95a45a483a361feaba054",
+            "payment_type" => "bri_epay",
+            "order_id" => "dp-" . $id,
+            "gross_amount" => "22199000.00",
+            "fraud_status" => "accept",
+            "currency" => "IDR"
+        ];
+        wp_remote_post(get_site_url() . '/wp-json/step-payment/v1/notify', ['body' => $data]);
+    }
+
 
     /**
      * ------------------------
@@ -96,10 +125,13 @@ class WSTX1SchedulerTest {
     /**
      * Start testing scene
      */
-    public function start() {
-        $this->appendOutput("SCENE #1 BEGIN");
-        $this->scene_1();
-        $this->appendOutput("SCENE #1 END.");
+    public function start($email) {
+        if ($email) {
+            $this->email = $email;
+        }
+        $this->appendOutput("SCENE #2 BEGIN");
+        $this->scene_2();
+        $this->appendOutput("SCENE #2 END.");
         $this->appendOutput("--- break ---");
         return $this->buffer_output;
     }
@@ -116,7 +148,7 @@ class WSTX1SchedulerTest {
         $satu_hari_kurang_lima_detik = 60 * 60 * 24 * 1 - 5;
         
         /** 100 */ 
-        // not set email debug time required
+        // no set email debug time required
         if (!$this->next_mail($schedulerInstance)) return;
 
         /** 103 */ 
@@ -138,6 +170,105 @@ class WSTX1SchedulerTest {
         $this->setEmailTimestampTo($schedulerInstance, 'email_p_10', $satu_hari_kurang_lima_detik);
         sleep(5);
         if (!$this->next_mail($schedulerInstance)) return;
+
+        return $this->wisataone_X1_test_finalize(true, $id);
+    }
+
+    private function scene_2() {
+
+        $schedulerInstance = $this->wisataone_X1_test_new_schedule_and_instance();
+        if (!$schedulerInstance) return;
+
+        $tiga_hari_kurang_lima_detik = 60 * 60 * 24 * 3 - 5;
+        $satu_hari_kurang_lima_detik = 60 * 60 * 24 * 1 - 5;
+        
+
+        /** 100 */ 
+        // no set email debug time required
+        if (!$this->next_mail($schedulerInstance)) return;
+        sleep(5);
+
+        /** 103 */ 
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_10', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /**
+         * Successful payment
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->test_payment_notification($schedulerInstance->id_order, "settlement");
+
+        /** 500 */ 
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $min_quota_simulation_result = $schedulerInstance->sim_minimum_quota_passed();
+        if (!$min_quota_simulation_result[0]) {
+            $this->appendOutput("Send mail for step = {$schedulerInstance->current_step} to {$schedulerInstance->traveler_email}, failed.", 'red');
+            $this->wisataone_X1_test_finalize(false, $schedulerInstance->id);
+            return;
+        }
+        if (!$min_quota_simulation_result[1]) {
+            $this->appendOutput("Update database for step = {$schedulerInstance->current_step}, failed.", 'red');
+            $this->wisataone_X1_test_finalize(false, $schedulerInstance->id);
+            return;
+        }
+
+        /** 503 */ 
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_50', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 506 */ 
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_50', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /**
+         * Successful payment
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->test_payment_notification($schedulerInstance->id_order, "settlement");
+
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setBookingDateTo45DaysPlus5Secs($schedulerInstance);
+
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 403 */ 
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_40', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 406 */ 
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_40', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 407 */ 
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_40', $satu_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /**
+         * Successful payment
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->test_payment_notification($schedulerInstance->id_order, "settlement");
 
         return $this->wisataone_X1_test_finalize(true, $id);
     }

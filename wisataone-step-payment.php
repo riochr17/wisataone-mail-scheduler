@@ -59,7 +59,8 @@ function register_step_payment_route() {
     register_rest_route('step-payment/v1', 'test', array(
         'methods'  => 'GET',
         'callback' => function() {
-            echo (new WSTX1SchedulerTest())->start();
+            $email = $_GET['email'];
+            echo (new WSTX1SchedulerTest())->start($email);
             die;
         }
     ));

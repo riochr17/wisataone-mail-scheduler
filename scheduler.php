@@ -161,6 +161,9 @@ class WSTX1Scheduler {
             case 510:
                 return "Pembayaran kedua 50% selesai";
 
+            case 511:
+                return "Menunggu 45 Hari Sebelum Keberangkatan";
+
             // P 50 H-7 -> C 10
             case -500:
                 return "Pembayaran kedua 50% gagal";
@@ -191,6 +194,9 @@ class WSTX1Scheduler {
             // P 40 H-7 -> C 10
             case -400:
                 return "Pembayaran ketiga 40% gagal";
+
+            case 411:
+                return "Seluruh pembayaran telah selesai";
         }
 
         return '-';
@@ -246,7 +252,12 @@ class WSTX1Scheduler {
 
             // P 50, H-3, H-6, H-7 -> S 10
             case 510:
-            // P 50 H-7 -> C 10
+                return -1;
+
+            case 511:
+                $h_45_ts_510 = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 45);
+                return $h_45_ts_510;
+
             case -500:
                 return -1;
 
@@ -269,15 +280,20 @@ class WSTX1Scheduler {
 
             // P 40, H-3, H-6, H-7 -> S 10
             case 410:
-            // P 40 H-7 -> C 10
             case -400:
                 return -1;
+            case 411:
+                return 999999999;
+
             default:
                 return -1;
         }
     }
 
     public function getNextMail() {
+        if ($this->current_step == 411) {
+            return "-";
+        }
         return formatElapsedTS($this->getNextSendingTime());
     }
 
@@ -315,6 +331,9 @@ class WSTX1Scheduler {
             case 510:
                 return "Pembayaran kedua 50% Berhasil";
 
+            case 511:
+                return "Menunggu 45 Hari Sebelum Keberangkatan.";
+
             // P 50 H-7 -> C 10
             case -500:
                 return "Pembayaran kedua 50% Gagal";
@@ -334,6 +353,9 @@ class WSTX1Scheduler {
             // P 40 H-7 -> C 10
             case -400:
                 return "Pembayaran ketiga 40% Gagal";
+
+            case 411:
+                return "Seluruh pembayaran telah selesai";
         }
 
         return "Menunggu Pembayaran";
@@ -353,6 +375,7 @@ class WSTX1Scheduler {
             
             // Waiting for quota
             case 200:
+            case 511:
                 return 0;
 
 
@@ -373,6 +396,7 @@ class WSTX1Scheduler {
             case 407:
             case 410:
             case -400:
+            case 411:
                 return $this->price * 0.4;
         }
 
@@ -400,6 +424,7 @@ class WSTX1Scheduler {
             
             // Waiting for quota
             case 200:
+            case 511:
                 return true;
 
 
@@ -422,6 +447,7 @@ class WSTX1Scheduler {
             case 406:
             case 407:
             case 410:
+            case 411:
                 return $this->ts_payment_40 != NULL;
 
             // P 40 H-7 -> C 10
@@ -464,6 +490,11 @@ class WSTX1Scheduler {
                 $sudah_bayar = $this->getStatusBayarMail();
                 return "wisataone-mail--p-50-". ($sudah_bayar ? 'success' : 'payment');
             
+            // Waiting for d-45
+            case 511:
+                $sudah_bayar = true;
+                return "wisataone-mail--p-50-". ($sudah_bayar ? 'success' : 'payment');
+
             // P 50 H-7 -> C 10
             case -500:
                 $sudah_bayar = false;
@@ -476,6 +507,7 @@ class WSTX1Scheduler {
             case 406:
             case 407:
             case 410:
+            case 411:
                 $sudah_bayar = $this->getStatusBayarMail();
                 return "wisataone-mail--p-40-". ($sudah_bayar ? 'success' : 'payment');
 
@@ -556,6 +588,9 @@ class WSTX1Scheduler {
     }
 
     private function tryCheckingNextMailSend() {
+        if ($this->current_step == 411) {
+            return;
+        }
         if ($this->getNextSendingTime() <= 0) {
             switch($this->current_step) {
                 case 100:
@@ -571,7 +606,7 @@ class WSTX1Scheduler {
                     $this->current_step = -100;
                     return $this->sendMail(-100);
                 case 110:
-                    return $this->sendMail(110);
+                    $this->sendMail(110);
 
                     /**
                      * Antara menunggu kuota terpenuhi atau batas 45 hari sudah terlewati
@@ -597,10 +632,11 @@ class WSTX1Scheduler {
                     $this->current_step = -500;
                     return $this->sendMail(-500);
                 case 510:
+                    $this->current_step = 510;
                     return $this->sendMail(510);
+                case 511:
                     $this->current_step = 400;
                     return $this->sendMail(400);
-
                 case 400:
                     $this->current_step = 403;
                     return $this->sendMail(403);
@@ -669,6 +705,7 @@ class WSTX1Scheduler {
                 $this->email_p_50_h7 = $current_date;
                 break;
             case 510:
+                $this->current_step = 511;
                 $this->email_s_50 = $current_date;
                 break;
 
@@ -692,6 +729,7 @@ class WSTX1Scheduler {
                 $this->email_p_40_h7 = $current_date;
                 break;
             case 410:
+                $this->current_step = 411;
                 $this->email_s_40 = $current_date;
                 break;
 
@@ -765,8 +803,6 @@ class WSTX1Scheduler {
         return $this->tryCheckingNextMailSend();
     }
 
-
-
     public function getOrderIdForPayment() {
         switch($this->current_step) {
             // P 10 -> H-3
@@ -800,6 +836,14 @@ class WSTX1Scheduler {
         }
 
         return 'dp-' . $this->id_order;
+    }
+
+    public function sim_minimum_quota_passed() {
+        $this->current_step = 500;
+        return [
+            $this->sendMail(500), 
+            wisataone_X1_update_order($this)
+        ];
     }
 
     public function debug_update($key, $value) {
