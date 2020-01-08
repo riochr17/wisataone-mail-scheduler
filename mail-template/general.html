@@ -29,6 +29,7 @@
             margin-left: 0%;
             width: 100%;
         }
+        
         @media (min-width: 576px) {
             .wisataone-mail--wrapper {
                 margin-left: 0%;
@@ -269,6 +270,35 @@
             border-bottom-right-radius: 3px;
             border-bottom-left-radius: 3px;
         }
+        .wisataone-mail--menunggu-kuota .wisataone-mail--detail-a {
+            display: none;
+        }
+        .wisataone-mail--kuota-tidak-terpenuhi .wisataone-mail--flash-description--big-title {
+            color: #ff5900;
+        }
+        .wisataone-mail--kuota-tidak-terpenuhi .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #ff5900;
+        }
+        .wisataone-mail--kuota-tidak-terpenuhi .wisataone-mail--detail-a--colored {
+            color: #ff5900;
+        }
+        .wisataone-mail--kuota-tidak-terpenuhi .wisataone-mail--detail-a {
+            display: none;
+        }
+        .wisataone-mail--gagal-batas-h-45 .wisataone-mail--flash-description--big-title {
+            color: #ff5900;
+        }
+        .wisataone-mail--gagal-batas-h-45 .wisataone-mail--detail-a {
+            background: #fff;
+            border: solid 1px #ff5900;
+        }
+        .wisataone-mail--gagal-batas-h-45 .wisataone-mail--detail-a--colored {
+            color: #ff5900;
+        }
+        .wisataone-mail--gagal-batas-h-45 .wisataone-mail--detail-a {
+            display: none;
+        }
         .wisataone-mail--dp-10-payment .wisataone-mail--flash-description--big-title {
             color: #ff5900;
         }
@@ -417,7 +447,7 @@
         </style>
     </head>
     <body>
-        <div class="wisataone-mail {{ template_class }}">
+        <div class="wisataone-mail {{ template_class }}" style="background: url('{{ img_bg }}') no-repeat center top / contain;">
             <div class="wisataone-mail--wrapper">
                 <div class="wisataone-mail--container">
                     <div class="wisataone-mail--logo">

@@ -60,6 +60,10 @@ function register_step_payment_route() {
         'methods'  => 'GET',
         'callback' => function() {
             $email = $_GET['email'];
+            if (!$email) {
+                echo "Parameter email tidak boleh kosong.";
+                die;
+            }
             echo (new WSTX1SchedulerTest())->start($email);
             die;
         }

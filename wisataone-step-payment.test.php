@@ -20,12 +20,13 @@ class WSTX1SchedulerTest {
 
     private function wisataone_X1_test_insert_new_schedule_to_database() {
         $id_order = mt_rand(1000000, 9999999);
+        $postfix_trip_name = mt_rand(10, 999);
         $sample_data = [
             'id_tour' => 5, 
             'id_order' => $id_order, 
             'traveler_name' => 'Testing', 
             'traveler_email' => $this->email, 
-            'tour_name' => 'Test Tour', 
+            'tour_name' => 'Test Tour ' . strval($postfix_trip_name), 
             'destination' => '.', 
             'price' => 88888, 
             'trip_date' => '2020-05-19 07:42:52', 
@@ -86,10 +87,10 @@ class WSTX1SchedulerTest {
         $schedulerInstance->debug_update($key, $ts_str);
     }
 
-    private function setBookingDateTo45DaysPlus5Secs($schedulerInstance) {
+    private function setBookingDateToNDaysPlus5Secs($schedulerInstance, $n) {
         $date1 = DateTime::createFromFormat('Y-m-d H:i:s', $schedulerInstance->trip_date);
         $dateAddedTs = new DateTime();
-        $dateAddedTs->setTimestamp($dateAddedTs->getTimestamp() + 60 * 60 * 24 * 45 + 5);
+        $dateAddedTs->setTimestamp($dateAddedTs->getTimestamp() + 60 * 60 * 24 * $n + 5);
         $begin_ts_str = $date1->format('Y-m-d');
         $ts_str = $dateAddedTs->format('Y-m-d');
         $this->appendOutput("Booking date adjusted from {$begin_ts_str} to {$ts_str}.");
@@ -129,9 +130,17 @@ class WSTX1SchedulerTest {
         if ($email) {
             $this->email = $email;
         }
-        $this->appendOutput("SCENE #2 BEGIN");
-        $this->scene_2();
-        $this->appendOutput("SCENE #2 END.");
+        $this->appendOutput("SCENE #3 BEGIN");
+        $this->appendOutput("Deskripsi skenario: Trip menunggu menunggu pembayaran DP 10% dan mencapai H-45");
+        $this->appendOutput("SCENE #3 -----");
+        $this->scene_3();
+        $this->appendOutput("SCENE #3 END.");
+        $this->appendOutput("--- break ---");
+        $this->appendOutput("SCENE #4 BEGIN");
+        $this->appendOutput("Deskripsi skenario: Trip menunggu kuota terpenuhi dan mencapai H-45");
+        $this->appendOutput("SCENE #4 -----");
+        $this->scene_4();
+        $this->appendOutput("SCENE #4 END.");
         $this->appendOutput("--- break ---");
         return $this->buffer_output;
     }
@@ -238,7 +247,7 @@ class WSTX1SchedulerTest {
 
         sleep(5);
         $schedulerInstance->load($schedulerInstance->id);
-        $this->setBookingDateTo45DaysPlus5Secs($schedulerInstance);
+        $this->setBookingDateToNDaysPlus5Secs($schedulerInstance, 50);
 
         sleep(5);
         $schedulerInstance->load($schedulerInstance->id);
@@ -269,6 +278,86 @@ class WSTX1SchedulerTest {
         sleep(5);
         $schedulerInstance->load($schedulerInstance->id);
         $this->test_payment_notification($schedulerInstance->id_order, "settlement");
+
+        return $this->wisataone_X1_test_finalize(true, $id);
+    }
+    
+    private function scene_3() {
+
+        $schedulerInstance = $this->wisataone_X1_test_new_schedule_and_instance();
+        if (!$schedulerInstance) return;
+
+        $tiga_hari_kurang_lima_detik = 60 * 60 * 24 * 3 - 5;
+        $satu_hari_kurang_lima_detik = 60 * 60 * 24 * 1 - 5;
+        
+        /** 100 */ 
+        // no set email debug time required
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 103 */ 
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_10', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /**
+         * Simulate to H-45
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setBookingDateToNDaysPlus5Secs($schedulerInstance, 45);
+
+        /**
+         * Check next mail, should be trip cancelation
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        return $this->wisataone_X1_test_finalize(true, $id);
+    }
+    
+    private function scene_4() {
+
+        $schedulerInstance = $this->wisataone_X1_test_new_schedule_and_instance();
+        if (!$schedulerInstance) return;
+
+        $tiga_hari_kurang_lima_detik = 60 * 60 * 24 * 3 - 5;
+        $satu_hari_kurang_lima_detik = 60 * 60 * 24 * 1 - 5;
+        
+        /** 100 */ 
+        // no set email debug time required
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 103 */ 
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_10', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /** 106 */ 
+        $this->setEmailTimestampTo($schedulerInstance, 'email_p_10', $tiga_hari_kurang_lima_detik);
+        sleep(5);
+        if (!$this->next_mail($schedulerInstance)) return;
+
+        /**
+         * Successful payment
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->test_payment_notification($schedulerInstance->id_order, "settlement");
+
+        /**
+         * Simulate to H-45
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        $this->setBookingDateToNDaysPlus5Secs($schedulerInstance, 45);
+
+        /**
+         * Check next mail, should be trip cancelation
+         */
+        sleep(5);
+        $schedulerInstance->load($schedulerInstance->id);
+        if (!$this->next_mail($schedulerInstance)) return;
 
         return $this->wisataone_X1_test_finalize(true, $id);
     }

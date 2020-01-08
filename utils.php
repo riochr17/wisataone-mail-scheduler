@@ -16,6 +16,10 @@ function wisataone_X1_formatRp($angka) {
 }
 
 function formatElapsedTS($ts) {
+    if ($ts <= 0) {
+        return "sekarang juga";
+    }
+    
     $seconds = $ts;
     $hours = floor($ts / 3600);
     $ts -= $hours * 3600;

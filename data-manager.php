@@ -146,7 +146,11 @@ function wisataone_X1_insert_order($id_booking) {
     $y = wisataone_X1_get_tour_data($id_booking);
     $res_y = wisataone_X1_insert_order_full_data($y);
 
-    $schedule = wisataone_X1_is_order_exist($id_booking);
+    if (!$res_y[0]) {
+        return false;
+    }
+
+    $schedule = (new WSTX1Scheduler([]))->load($res_y[1]);
     $schedule->checkMailQueue();
 
     return true;
@@ -231,6 +235,8 @@ function wisataone_X1_create_plugin_database_table() {
             ts_payment_40 DATETIME DEFAULT NULL,
 
             email_kuota_terpenuhi DATETIME DEFAULT NULL,
+            email_kuota_tidak_terpenuhi DATETIME DEFAULT NULL,
+            email_kuota_gagal_batas_h_45 DATETIME DEFAULT NULL,
 
             PRIMARY KEY  (id)
         ) {$charset_collate};";

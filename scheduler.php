@@ -46,6 +46,8 @@ class WSTX1Scheduler {
            $ts_payment_40,
 
            $email_kuota_terpenuhi,
+           $email_kuota_tidak_terpenuhi,
+           $email_kuota_gagal_batas_h_45,
            
            $time_to_trip;
 
@@ -91,6 +93,8 @@ class WSTX1Scheduler {
         $this->ts_payment_40 = $datas['ts_payment_40'];
 
         $this->email_kuota_terpenuhi = $datas['email_kuota_terpenuhi'];
+        $this->email_kuota_tidak_terpenuhi = $datas['email_kuota_tidak_terpenuhi'];
+        $this->email_kuota_gagal_batas_h_45 = $datas['email_kuota_gagal_batas_h_45'];
 
         $this->time_to_trip = $datas['time_to_trip'];
     }
@@ -162,7 +166,7 @@ class WSTX1Scheduler {
                 return "Pembayaran kedua 50% selesai";
 
             case 511:
-                return "Menunggu 45 Hari Sebelum Keberangkatan";
+                return "Menunggu 50 Hari Sebelum Keberangkatan";
 
             // P 50 H-7 -> C 10
             case -500:
@@ -197,6 +201,12 @@ class WSTX1Scheduler {
 
             case 411:
                 return "Seluruh pembayaran telah selesai";
+
+            case -200:
+                return "Kuota tidak terpenuhi, trip dibatalkan";
+
+            case -999:
+                return "Trip dibatalkan: keterlambatan pembayaran hingga H-45";
         }
 
         return '-';
@@ -255,8 +265,8 @@ class WSTX1Scheduler {
                 return -1;
 
             case 511:
-                $h_45_ts_510 = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 45);
-                return $h_45_ts_510;
+                $h_50_ts = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 50);
+                return $h_50_ts;
 
             case -500:
                 return -1;
@@ -291,7 +301,7 @@ class WSTX1Scheduler {
     }
 
     public function getNextMail() {
-        if ($this->current_step == 411) {
+        if ($this->current_step == 411 || $this->current_step < 0) {
             return "-";
         }
         return formatElapsedTS($this->getNextSendingTime());
@@ -332,7 +342,7 @@ class WSTX1Scheduler {
                 return "Pembayaran kedua 50% Berhasil";
 
             case 511:
-                return "Menunggu 45 Hari Sebelum Keberangkatan.";
+                return "Menunggu 50 Hari Sebelum Keberangkatan.";
 
             // P 50 H-7 -> C 10
             case -500:
@@ -356,6 +366,12 @@ class WSTX1Scheduler {
 
             case 411:
                 return "Seluruh pembayaran telah selesai";
+
+            case -200:
+                return "Kuota tidak terpenuhi, trip dibatalkan";
+
+            case -999:
+                return "Trip dibatalkan: keterlambatan pembayaran hingga H-45";
         }
 
         return "Menunggu Pembayaran";
@@ -478,7 +494,7 @@ class WSTX1Scheduler {
             // Waiting for quota
             case 200:
                 $sudah_bayar = true;
-                return "wisataone-mail--dp-10-". ($sudah_bayar ? 'success' : 'payment');
+                return "wisataone-mail--menunggu-kuota";
 
 
             // P 50 -> H-3
@@ -490,7 +506,7 @@ class WSTX1Scheduler {
                 $sudah_bayar = $this->getStatusBayarMail();
                 return "wisataone-mail--p-50-". ($sudah_bayar ? 'success' : 'payment');
             
-            // Waiting for d-45
+            // Waiting for d-50
             case 511:
                 $sudah_bayar = true;
                 return "wisataone-mail--p-50-". ($sudah_bayar ? 'success' : 'payment');
@@ -515,6 +531,12 @@ class WSTX1Scheduler {
             case -400:
                 $sudah_bayar = false;
                 return "wisataone-mail--p-40-". ($sudah_bayar ? 'success' : 'payment');
+
+            case -200:
+                return "wisataone-mail--kuota-tidak-terpenuhi";
+
+            case -999:
+                return "wisataone-mail--gagal-batas-h-45";
         }
 
         return "wisataone-mail--dp-10-payment";
@@ -528,11 +550,23 @@ class WSTX1Scheduler {
         $name = $this->traveler_name;
         $jenis_pembayaran = $this->getJenisMail();
         $tour_name = $this->tour_name;
-        $is_step_200 = $this->current_step == 200;
+        $is_step_500 = $this->current_step == 500;
         $sudah_bayar = $this->getStatusBayarMail();
 
+        if ($this->current_step == 200) {
+            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> sedang menunggu kuota perjalanan terpenuhi, akan kami kabari ketika kuota telah terpenuhi.";
+        }
+
+        if ($this->current_step == -200) {
+            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> dibatalkan karena kuota tidak terpenuhi hingga H-45 perjalanan.";
+        }
+
+        if ($this->current_step == -999) {
+            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> telah dibatalkan karena kamu belum melakukan pembayaran yang tertunda hingga H-45 perjalanan.";
+        }
+
         if ($sudah_bayar) {
-            $text_kuota_terpenuhi = $is_step_200 ? 'kuota trip telah terpenuhi, saatnya melakukan ' : '';
+            $text_kuota_terpenuhi = $is_step_500 ? 'kuota trip telah terpenuhi, saatnya melakukan ' : '';
             return "Halo <b>" . $name . "</b>, " . $text_kuota_terpenuhi . "pembayaran " . $jenis_pembayaran . " untuk pemesanan <b>" . $tour_name . "</b> telah berhasil.";
         }
         return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b>, saatnya melakukan " . $jenis_pembayaran . ".";
@@ -588,8 +622,18 @@ class WSTX1Scheduler {
     }
 
     private function tryCheckingNextMailSend() {
-        if ($this->current_step == 411) {
+        if ($this->current_step == 411 || $this->current_step < 0) {
             return;
+        }
+        $h_45_ts = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 45);
+        if ($h_45_ts <= 0) {
+            if ($this->current_step == 200) {
+                $this->current_step = -200;
+                return $this->sendMail(-200);
+            } else {
+                $this->current_step = -999;
+                return $this->sendMail(-999);
+            }
         }
         if ($this->getNextSendingTime() <= 0) {
             switch($this->current_step) {
@@ -660,83 +704,112 @@ class WSTX1Scheduler {
 
     public function sendMail($email_id) {
         $current_date = (new DateTime())->format('Y-m-d H:i:s');
-        if (!$this->mailer_do()) {
-            return false;
-        }
         switch($this->current_step) {
             case 100:
+                if ($this->email_p_10) { return true; }
                 $this->email_p_10 = $current_date;
                 break;
             case 103:
+                if ($this->email_p_10_h3) { return true; }
                 $this->email_p_10_h3 = $current_date;
                 break;
             case 106: 
+                if ($this->email_p_10_h6) { return true; }
                 $this->email_p_10_h6 = $current_date;
                 break;
             case 107: 
+                if ($this->email_p_10_h7) { return true; }
                 $this->email_p_10_h7 = $current_date;
                 break;
             case 110:
+                if ($this->email_s_10) { return true; }
                 $this->email_s_10 = $current_date;
                 break;
 
             // P 10 H-7 -> C 10
             case -100:
+                if ($this->email_c_10) { return true; }
                 $this->email_c_10 = $current_date;
                 break;
             
             // Waiting for quota
             case 200:
+                if ($this->email_kuota_terpenuhi) { return true; }
                 $this->email_kuota_terpenuhi = $current_date;
                 break;
 
             case 500:
+                if ($this->email_p_50) { return true; }
                 $this->email_p_50 = $current_date;
                 break;
 
             // P 50 -> H-3
             case 503:
+                if ($this->email_p_50_h3) { return true; }
                 $this->email_p_50_h3 = $current_date;
                 break;
             case 506: 
+                if ($this->email_p_50_h6) { return true; }
                 $this->email_p_50_h6 = $current_date;
                 break;
             case 507: 
+                if ($this->email_p_50_h7) { return true; }
                 $this->email_p_50_h7 = $current_date;
                 break;
             case 510:
                 $this->current_step = 511;
-                $this->email_s_50 = $current_date;
+                if ($this->email_s_50) { return true; }
+                    $this->email_s_50 = $current_date;
                 break;
 
             // P 50 H-7 -> C 50
             case -500:
+                if ($this->email_c_50) { return true; }
                 $this->email_c_50 = $current_date;
                 break;
 
             case 400:
+                if ($this->email_p_40) { return true; }
                 $this->email_p_40 = $current_date;
                 break;
             
             // P 40 -> H-3
             case 403:
+                if ($this->email_p_40_h3) { return true; }
                 $this->email_p_40_h3 = $current_date;
                 break;
             case 406: 
+                if ($this->email_p_40_h6) { return true; }
                 $this->email_p_40_h6 = $current_date;
                 break;
             case 407: 
+                if ($this->email_p_40_h7) { return true; }
                 $this->email_p_40_h7 = $current_date;
                 break;
             case 410:
                 $this->current_step = 411;
+                if ($this->email_s_40) { return true; }
                 $this->email_s_40 = $current_date;
                 break;
 
             // P 40 H-7 -> C 40
             case -400:
+                if ($this->email_c_40) { return true; }
                 $this->email_c_40 = $current_date;
                 break;
+
+            case -200:
+                if ($this->email_kuota_tidak_terpenuhi) { return true; }
+                $this->email_kuota_tidak_terpenuhi = $current_date;
+                break;
+
+            case -999:
+                if ($this->email_kuota_gagal_batas_h_45) { return true; }
+                $this->email_kuota_gagal_batas_h_45 = $current_date;
+                break;
+        }
+        if (!$this->mailer_do()) {
+            return false;
         }
 
         return wisataone_X1_update_order($this);

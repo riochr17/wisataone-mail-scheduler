@@ -67,7 +67,7 @@ function wisataone_X1_setting_page_builder() {
     echo 'Last tick: ' . wisataone_X1_get_single_cron_tick() . ' UTC+00:00';
     echo '</div>';
     echo '<table style="border-collapse: collapse;">';
-    $keys = ['id', 'next_mail_in', 'time_to_trip', 'id_tour', 'id_order', 'tour_name', 'traveler_name', 'booking_date', 'current_step', 'ts_payment_10', 'ts_payment_50', 'ts_payment_40', 'email_p_10', 'email_p_10_h3', 'email_p_10_h6', 'email_p_10_h7', 'email_p_10_c', 'email_p_10_s', 'email_p_50', 'email_p_50_h3', 'email_p_50_h6', 'email_p_50_h7', 'email_p_50_c', 'email_p_50_s', 'email_p_40', 'email_p_40_h3', 'email_p_40_h6', 'email_p_40_h7', 'email_p_40_c', 'email_p_40_s'];
+    $keys = ['id', 'next_mail_in', 'time_to_trip', 'id_tour', 'id_order', 'tour_name', 'traveler_name', 'booking_date', 'current_step', 'ts_payment_10', 'ts_payment_50', 'ts_payment_40', 'email_p_10', 'email_p_10_h3', 'email_p_10_h6', 'email_p_10_h7', 'email_c_10', 'email_s_10', 'email_p_50', 'email_p_50_h3', 'email_p_50_h6', 'email_p_50_h7', 'email_c_50', 'email_s_50', 'email_p_40', 'email_p_40_h3', 'email_p_40_h6', 'email_p_40_h7', 'email_c_40', 'email_s_40', 'email_kuota_tidak_terpenuhi', 'email_kuota_gagal_batas_h_45'];
     echo '<tr>';
     foreach ($keys as $value) {
         echo    '<td style="border: solid 1px #CCC; padding: 4px 8px; font-weight: bold">';
