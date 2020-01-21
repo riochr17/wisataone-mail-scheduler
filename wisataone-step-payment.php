@@ -18,14 +18,18 @@ include_once(dirname(__FILE__) . '/wisataone-step-payment.test.php');
 
 function testing_page($request) {
 
-    $orders = wisataone_X1_get_all_order();
-    foreach ($orders as $row) {
-        $row->time_to_trip = wisataone_X1_time_diff_by_now($row->trip_date);
-        $schedule = new WSTX1Scheduler((array) $row);
-        echo $schedule->checkMailQueue();
-    }
-    // $s = (new WSTX1Scheduler([]))->load(1);
-    // echo $s->get_mail_trx_template();
+    // foreach (wisataone_X1_get_all_order_by_id_tour_and_step_gte_110(5, '2020-05-19 07:42:52') as $value) {
+    //     echo $value->id;
+    // }
+    // return [5, '2020-05-19 07:42:52'];
+    // $orders = wisataone_X1_get_all_order();
+    // foreach ($orders as $row) {
+    //     $row->time_to_trip = wisataone_X1_time_diff_by_now($row->trip_date);
+    //     $schedule = new WSTX1Scheduler((array) $row);
+    //     echo $schedule->checkMailQueue();
+    // }
+    $s = (new WSTX1Scheduler([]))->load(1);
+    echo $s->get_mail_trx_template();
 }
 
 function wisataone_X1_api_get_snap_token() {
@@ -59,6 +63,11 @@ function register_step_payment_route() {
     register_rest_route('step-payment/v1', 'test', array(
         'methods'  => 'GET',
         'callback' => function() {
+            
+            $data = tourmaster_get_booking_data(array('id' => 42), array('single' => true));
+            $tour_duration = get_post_meta($data->tour_id, 'tourmaster-tour-duration', 0);
+            echo json_encode($tour_duration);
+            die;
             $email = $_GET['email'];
             if (!$email) {
                 echo "Parameter email tidak boleh kosong.";
@@ -102,7 +111,7 @@ function step_payment_sample_request($request) {
         return $sch->processPayment($payment_notification['transaction_status']);
     }
 
-    return true;
+    return "222";
 }
 
 function wisataone_X1_removeCron() {

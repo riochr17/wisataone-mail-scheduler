@@ -55,6 +55,22 @@ function wisataone_X1_get_all_order() {
 /**
  * Get all notification from database.
  */
+function wisataone_X1_get_all_order_by_id_tour_and_step_gte_110($id_tour, $trip_date) {
+    global $wpdb, $wisataone_X1_tblname;
+    $wp_track_table = $wpdb->prefix . $wisataone_X1_tblname;
+
+    return $wpdb->get_results( 
+        "
+        SELECT *
+        FROM {$wp_track_table}
+        WHERE {$wp_track_table}.id_tour = {$id_tour} AND {$wp_track_table}.trip_date LIKE '{$trip_date}' AND {$wp_track_table}.current_step >= 110
+        "
+    );
+}
+
+/**
+ * Get all notification from database.
+ */
 function wisataone_X1_get_single_order($id) {
     global $wpdb, $wisataone_X1_tblname;
     $wp_track_table = $wpdb->prefix . $wisataone_X1_tblname;
@@ -121,6 +137,7 @@ function wisataone_X1_is_order_exist($id_booking) {
 
 function wisataone_X1_get_tour_data($id_booking) {
     $data = tourmaster_get_booking_data(array('id' => $id_booking), array('single' => true));
+    $tour_duration = get_post_meta($data->tour_id, 'tourmaster-tour-duration', 0);
     $billing_info = json_decode($data->billing_info);
 
     return [
@@ -134,6 +151,7 @@ function wisataone_X1_get_tour_data($id_booking) {
         'trip_date' => $data->travel_date . ' 07:42:52', 
         'number_of_traveler' => $data->traveller_amount, 
         'current_step' => 0, 
+        'duration' => sizeof($tour_duration) > 0 ? intval($tour_duration[0]) : 0,
         'booking_date' => $data->booking_date,
     ];
 }
@@ -207,6 +225,7 @@ function wisataone_X1_create_plugin_database_table() {
             destination VARCHAR(191) NOT NULL,
             price bigint(20) NOT NULL,
             trip_date DATETIME NOT NULL,
+            duration INTEGER DEFAULT 0,
             number_of_traveler integer NOT NULL,
 
             email_p_10 DATETIME DEFAULT NULL,

@@ -60,3 +60,9 @@ function wisataone_X1_time_diff_substract_and_by_now($t1, $seconds) {
     return $dateSubstractedTs->getTimestamp() - $currentDate->getTimestamp();
 }
 
+function wisataone_X1_time_add_by_days($t1, $days) {
+    $date1 = DateTime::createFromFormat('Y-m-d H:i:s', $t1);
+    $date1->setTimestamp($date1->getTimestamp() + $days * 60 * 60 * 24);
+    $date1->setTimezone(new DateTimeZone('Asia/Jakarta'));
+    return $date1->format('d M Y');
+}

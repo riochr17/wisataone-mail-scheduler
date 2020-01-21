@@ -88,7 +88,7 @@ function getPageAttributes($trx_id) {
         'id_transaksi' => $sch->id,
 
         'tour_name' => $sch->tour_name,
-        'trip_date' => $sch->getReadableTripDate(),
+        'trip_date' => $sch->getStartTripDate(),
         'number_of_traveler' => $sch->number_of_traveler,
 
         'current_date' => (new DateTime())->setTimezone(new DateTimeZone('Asia/Jakarta'))->format('Y-m-d H:i:s'),

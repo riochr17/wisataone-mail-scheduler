@@ -93,7 +93,7 @@ function wisataone_X1_setting_page_builder() {
                     echo $row->booking_date;
                     break;
                 case 'current_step':
-                    echo $row->getCurrentStep();
+                    echo $row->getCurrentStep() . ' (' . $row->{$col_key} . ')';
                     break;
                 default:
                     echo $row->{$col_key};

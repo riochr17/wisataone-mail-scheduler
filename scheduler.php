@@ -1,6 +1,7 @@
 <?php
 
 include_once(dirname(__FILE__) . '/utils.php');
+include_once(dirname(__FILE__) . '/order-payment-status.php');
 include_once(dirname(__FILE__) . '/data-manager.php');
 include_once(dirname(__FILE__) . '/template-loader.php');
 
@@ -18,6 +19,7 @@ class WSTX1Scheduler {
            $destination, 
            $price, 
            $trip_date,
+           $duration,
            $number_of_traveler,
 
            $email_p_10, 
@@ -65,6 +67,7 @@ class WSTX1Scheduler {
         $this->destination = $datas['destination'];
         $this->price = $datas['price'];
         $this->trip_date = $datas['trip_date'];
+        $this->duration = $datas['duration'];
         $this->number_of_traveler = $datas['number_of_traveler'];
 
         $this->email_p_10 = $datas['email_p_10'];
@@ -101,16 +104,28 @@ class WSTX1Scheduler {
 
     public function load($id) {
         $arr = wisataone_X1_get_single_order($id);
-        $this->__construct((array) $arr);
+        if ($arr) {
+            $this->__construct((array) $arr);
+        }
 
         return $this;
     }
 
     public function loadByOrderId($id_booking) {
         $arr = wisataone_X1_is_order_exist($id_booking);
-        $this->__construct((array) $arr);
+        if ($arr) {
+            $this->__construct((array) $arr);
+        }
 
         return $this;
+    }
+
+    public function getStartTripDate() {
+        return wisataone_X1_time_add_by_days($this->trip_date, 0);
+    }
+
+    public function getEndTripDate() {
+        return wisataone_X1_time_add_by_days($this->trip_date, $this->duration);
     }
 
     public function getCurrentStep() {
@@ -143,27 +158,31 @@ class WSTX1Scheduler {
             // Waiting for quota
             case 200:
                 return "Menunggu kuota terpenuhi";
+            
+            // Waiting for quota
+            case 201:
+                return "Kuota Terpenuhi";
 
 
             // P 50 -> H-0
             case 500:
-                return "Menunggu Pembayaran kedua 50%";
+                return "Menunggu Pembayaran 50%";
 
             // P 50 -> H-3
             case 503:
-                return "Menunggu Pembayaran kedua 50% (< 3 hari)";
+                return "Menunggu Pembayaran 50% (< 3 hari)";
             
             // P 50 H-3 -> H-6
             case 506:
-                return "Menunggu Pembayaran kedua 50% (3 s/d 6 hari)";
+                return "Menunggu Pembayaran 50% (3 s/d 6 hari)";
 
             // P 50 H-6 -> H-7
             case 507:
-                return "Menunggu Pembayaran kedua 50% (dl < 1 hari)";
+                return "Menunggu Pembayaran 50% (dl < 1 hari)";
 
             // P 50, H-3, H-6, H-7 -> S 10
             case 510:
-                return "Pembayaran kedua 50% selesai";
+                return "Pembayaran 50% selesai";
 
             case 511:
                 return "Menunggu 50 Hari Sebelum Keberangkatan";
@@ -177,27 +196,27 @@ class WSTX1Scheduler {
 
             // P 40 -> H-0
             case 400:
-                return "Menunggu Pembayaran ketiga 40%";
+                return "Menunggu Pembayaran 40%";
 
             // P 40 -> H-3
             case 403:
-                return "Menunggu Pembayaran ketiga 40% (< 3 hari)";
+                return "Menunggu Pembayaran 40% (< 3 hari)";
             
             // P 40 H-3 -> H-6
             case 406:
-                return "Menunggu Pembayaran ketiga 40% (3 s/d 6 hari)";
+                return "Menunggu Pembayaran 40% (3 s/d 6 hari)";
 
             // P 40 H-6 -> H-7
             case 407:
-                return "Menunggu Pembayaran ketiga 40% (dl < 1 hari)";
+                return "Menunggu Pembayaran 40% (dl < 1 hari)";
 
             // P 40, H-3, H-6, H-7 -> S 10
             case 410:
-                return "Pembayaran ketiga 40% selesai";
+                return "Pembayaran 40% selesai";
 
             // P 40 H-7 -> C 10
             case -400:
-                return "Pembayaran ketiga 40% gagal";
+                return "Pembayaran 40% gagal";
 
             case 411:
                 return "Seluruh pembayaran telah selesai";
@@ -242,6 +261,9 @@ class WSTX1Scheduler {
             case 200:
                 $h_45_ts = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 45);
                 return $h_45_ts;
+
+            case 201:
+                return -1;
 
 
             // P 50 -> H-3
@@ -328,6 +350,10 @@ class WSTX1Scheduler {
             // Waiting for quota
             case 200:
                 return "Menunggu Kuota Terpenuhi";
+            
+            // Waiting for quota
+            case 201:
+                return "Kuota Terpenuhi";
 
 
             // P 50 -> H-3
@@ -440,6 +466,7 @@ class WSTX1Scheduler {
             
             // Waiting for quota
             case 200:
+            case 201:
             case 511:
                 return true;
 
@@ -554,26 +581,22 @@ class WSTX1Scheduler {
         $sudah_bayar = $this->getStatusBayarMail();
 
         if ($this->current_step == 200) {
-            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> sedang menunggu kuota perjalanan terpenuhi, akan kami kabari ketika kuota telah terpenuhi.";
+            return "Halo <b>" . $name . "</b>, trip kamu: <b>" . $tour_name . "</b> sedang menunggu kuota terpenuhi. Kami akan menghubungi kamu ketika kuota terpenuhi.";
         }
 
         if ($this->current_step == -200) {
-            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> dibatalkan karena kuota tidak terpenuhi hingga H-45 perjalanan.";
+            return "Halo <b>" . $name . "</b>, trip kamu: <b>" . $tour_name . "</b> dibatalkan karena kuota tidak terpenuhi hingga H-45 perjalanan.";
         }
 
         if ($this->current_step == -999) {
-            return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b> telah dibatalkan karena kamu belum melakukan pembayaran yang tertunda hingga H-45 perjalanan.";
+            return "Halo <b>" . $name . "</b>, trip kamu: <b>" . $tour_name . "</b> telah dibatalkan karena kamu belum melakukan pembayaran yang tertunda hingga H-45 perjalanan.";
         }
 
         if ($sudah_bayar) {
-            $text_kuota_terpenuhi = $is_step_500 ? 'kuota trip telah terpenuhi, saatnya melakukan ' : '';
-            return "Halo <b>" . $name . "</b>, " . $text_kuota_terpenuhi . "pembayaran " . $jenis_pembayaran . " untuk pemesanan <b>" . $tour_name . "</b> telah berhasil.";
+            return "Halo <b>" . $name . "</b>, " . $jenis_pembayaran . " untuk trip <b>" . $tour_name . "</b> telah berhasil.";
         }
-        return "Halo <b>" . $name . "</b>, pemesanan kamu: <b>" . $tour_name . "</b>, saatnya melakukan " . $jenis_pembayaran . ".";
-    }
-
-    public function getReadableTripDate() {
-        return DateTime::createFromFormat('Y-m-d H:i:s', $this->trip_date)->format('d M Y');
+        $text_kuota_terpenuhi = $is_step_500 ? 'kuota trip telah terpenuhi, ' : '';
+        return "Halo <b>" . $name . "</b>, trip kamu: <b>" . $tour_name . "</b>, " . $text_kuota_terpenuhi . "saatnya melakukan " . $jenis_pembayaran . ".";
     }
 
     public function getPaymentLink() {
@@ -583,7 +606,34 @@ class WSTX1Scheduler {
     public function getPaymentTitle() {
         $jenis_pembayaran = $this->getJenisMail();
         $tour_name = $this->tour_name;
-        return $jenis_pembayaran . " pemesanan " . $tour_name . ".";
+        return $jenis_pembayaran . " trip " . $tour_name . ".";
+    }
+
+    private function update_x() {
+        return wisataone_X1_update_order($this);
+    }
+
+    private function cekKuotaPenuh() {
+        $orders = wisataone_X1_get_all_order_by_id_tour_and_step_gte_110($this->id_tour, $this->trip_date);
+        $total_amount = 0;
+        foreach ($orders as $order) {
+            $total_amount += intval($order->number_of_traveler);
+        }
+
+        $minimum_kuota = 7;
+        if ($total_amount >= $minimum_kuota) {
+            foreach ($orders as $order) {
+                $sch = (new WSTX1Scheduler([]))->load($order->id);
+                if ($sch->current_step == 110 || $sch->current_step == 200) {
+                    $sch->current_step = 201;
+                    $sch->update_x();
+                    $sch->sendMail(201);
+                }
+            }
+            return true;
+        }
+
+        return true;
     }
 
     public function processPayment($payment_status) {
@@ -604,6 +654,7 @@ class WSTX1Scheduler {
                         $this->current_step = 510;
                         break;
                     case "40":
+                        wisataone_X1_changeOrderStatusToOnlinePaid($this->id_order);
                         $this->current_step = 410;
                         break;
                 }
@@ -615,7 +666,8 @@ class WSTX1Scheduler {
          */
         $update_ok = wisataone_X1_update_order($this);
         if ($update_ok) {
-            return $this->tryCheckingNextMailSend();
+            $this->tryCheckingNextMailSend();
+            $this->cekKuotaPenuh();
         }
 
         return $update_ok;
@@ -626,7 +678,7 @@ class WSTX1Scheduler {
             return;
         }
         $h_45_ts = wisataone_X1_time_diff_substract_and_by_now($this->trip_date, 60 * 60 * 24 * 45);
-        if ($h_45_ts <= 0) {
+        if ($h_45_ts <= 0 && $this->current_step > 0) {
             if ($this->current_step == 200) {
                 $this->current_step = -200;
                 return $this->sendMail(-200);
@@ -662,6 +714,10 @@ class WSTX1Scheduler {
                         $this->current_step = 500;
                         return $this->sendMail(500);
                     }
+
+                case 201:
+                    $this->current_step = 201;
+                    return $this->sendMail(500);
 
                 case 500:
                     $this->current_step = 503;
@@ -734,9 +790,19 @@ class WSTX1Scheduler {
             
             // Waiting for quota
             case 200:
-                if ($this->email_kuota_terpenuhi) { return true; }
-                $this->email_kuota_terpenuhi = $current_date;
                 break;
+            
+            // Waiting for quota
+            case 201:
+                if (!$this->email_s_10) {
+                    $this->email_s_10 = $current_date;
+                    $this->current_step = 110;
+                    $this->mailer_do();
+                }
+                $this->current_step = 500;
+                if (!$this->email_kuota_terpenuhi) { 
+                    $this->email_kuota_terpenuhi = $current_date;
+                }
 
             case 500:
                 if ($this->email_p_50) { return true; }
@@ -833,6 +899,7 @@ class WSTX1Scheduler {
             $sample_rcpt = $this->traveler_email;
             $sample_title = $this->tour_name . ": " . $this->getCurrentStep();
             $sample_html = $this->get_mail_trx_template();
+
             return wp_mail($sample_rcpt, $sample_title, $sample_html, $headers);
         }
 
@@ -852,7 +919,7 @@ class WSTX1Scheduler {
             'id_order' => $this->id_order,
             'booking_date' => $this->booking_date,
             'img_logo' => 'https://wisataone.id/wp-content/uploads/2018/08/Logo-Wisataone.png',
-            'img_bg' => 'https://www.wisataone.id/wp-content/uploads/2019/12/1080px-Tropenmuseum-1024x683.jpg',
+            'img_bg' => 'https://www.wisataone.id/wp-content/uploads/2020/01/IMG_0925.jpg',
 
             'id_transaksi' => $this->id,
             'current_date' => (new DateTime())->setTimezone(new DateTimeZone('Asia/Jakarta'))->format('Y-m-d H:i:s'),
@@ -862,7 +929,8 @@ class WSTX1Scheduler {
             'status_bayar' => $this->getStatusBayarMail() ? "Lunas" : "Belum Lunas",
 
             'tour_name' => $this->tour_name,
-            'trip_date' => $this->getReadableTripDate(),
+            'trip_date' => $this->getStartTripDate(),
+            'end_trip_date' => $this->getEndTripDate(),
             'number_of_traveler' => $this->number_of_traveler,
 
             'price' => $this->getTotalHarga(),
